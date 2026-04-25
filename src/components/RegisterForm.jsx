@@ -27,7 +27,7 @@ const RegisterForm = ({ onComplete }) => {
     console.log("Registrando en Monad...", formData);
     await new Promise(r => setTimeout(r, 3000));
     setIsMinting(false);
-    onComplete();
+    onComplete(formData);
   };
 
   const inputStyle = "w-full p-4 rounded-2xl border-2 border-slate-100 focus:border-myhealth-blue outline-none transition-all font-medium text-slate-700 bg-white shadow-sm text-sm";

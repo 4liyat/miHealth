@@ -1,18 +1,25 @@
 import React, { useState } from 'react';
-import { User, ShieldCheck, Fingerprint, CreditCard, ChevronRight, Settings, Bell, Eye, Lock, Unlock, FileText, Activity } from 'lucide-react';
+import { ShieldCheck, Fingerprint, CreditCard, ChevronRight, Settings, Bell, Eye, Lock, Unlock, FileText, Activity, History } from 'lucide-react';
 
-const ProfileView = () => {
+const ProfileView = ({ data }) => {
   const [showVault, setShowVault] = useState(false);
   const [userData] = useState({
-    name: "Juan Pérez",
-    nfcId: "MH-8829-01X",
-    bloodType: "O+",
-    criticalAllergy: "Penicilina",
+    name: data?.name || "Juan Pérez",
+    nfcId: data?.nfcId || "MH-8829-01X",
+    bloodType: data?.bloodType || "O+",
+    criticalAllergy: data?.chronicDisease || "Ninguna registrada",
     vaultData: {
-      history: ["Cirugía de Apéndice (2024)", "Tratamiento Hipertensión"],
-      medications: ["Enalapril 10mg"],
-      lastCheckup: "15 Mar 2026"
-    }
+      history: data?.vaultData?.history || ["Perfil creado el " + new Date().toLocaleDateString()],
+      medications: [data?.baseMedication || "Sin medicación"],
+      lastCheckup: data?.vaultData?.lastCheckup || new Date().toLocaleDateString()
+    },
+    contacts: [
+      { 
+        name: data?.contact1Name || "María García", 
+        phone: data?.contact1Phone || "+52 33 1234 5678",
+        relation: "Contacto Principal"
+      }
+    ]
   });
 
   return (
@@ -166,16 +173,20 @@ const ProfileView = () => {
         <h3 className="text-[10px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
           <Bell size={14} className="text-myhealth-red" /> Contactos SOS
         </h3>
-        <div className="flex items-center justify-between p-3 bg-slate-50 rounded-2xl">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-myhealth-red/10 rounded-full flex items-center justify-center text-myhealth-red text-xs font-black">MG</div>
-            <div>
-              <p className="text-sm font-bold text-slate-800 leading-tight">María García</p>
-              <p className="text-[10px] text-slate-400 font-medium">Esposa • SMS Activo</p>
+        {userData.contacts.map((contact, i) => (
+          <div key={i} className="flex items-center justify-between p-3 bg-slate-50 rounded-2xl">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-myhealth-red/10 rounded-full flex items-center justify-center text-myhealth-red text-xs font-black">
+                {contact.name.split(' ').map(n => n[0]).join('').toUpperCase()}
+              </div>
+              <div>
+                <p className="text-sm font-bold text-slate-800 leading-tight">{contact.name}</p>
+                <p className="text-[10px] text-slate-400 font-medium">{contact.relation || 'Contacto'} • SMS Activo</p>
+              </div>
             </div>
+            <ChevronRight size={18} className="text-slate-300" />
           </div>
-          <ChevronRight size={18} className="text-slate-300" />
-        </div>
+        ))}
       </section>
 
       {/* OPCIONES ADICIONALES */}

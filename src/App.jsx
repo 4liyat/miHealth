@@ -9,6 +9,7 @@ import { Activity, User, Home, History } from 'lucide-react';
 function App() {
   const [activeTab, setActiveTab] = useState('home'); // home, emergency, profile, register, activity
   const [isRegistered, setIsRegistered] = useState(false);
+  const [userData, setUserData] = useState(null);
   const [autoScan, setAutoScan] = useState(false);
 
   useEffect(() => {
@@ -19,7 +20,8 @@ function App() {
     }
   }, []);
 
-  const handleRegistrationComplete = () => {
+  const handleRegistrationComplete = (data) => {
+    setUserData(data);
     setIsRegistered(true);
     setActiveTab('profile');
   };
@@ -83,7 +85,7 @@ function App() {
                 </button>
               </div>
             ) : (
-              <ProfileView />
+              <ProfileView data={userData} />
             )}
           </div>
         )}
