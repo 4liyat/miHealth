@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ShieldAlert, MapPin, Cpu, CheckCircle2, AlertCircle, Lock, Unlock, History, Droplet, Phone } from 'lucide-react';
+import { ShieldAlert, MapPin, Cpu, CheckCircle2, AlertCircle, Droplet, Phone, FileText, Lock, Unlock } from 'lucide-react';
 import ActivityView from './ActivityView';
 
 const EmergencyAction = () => {
@@ -7,11 +7,9 @@ const EmergencyAction = () => {
   const [isAuthorized, setIsAuthorized] = useState(false);
   const [pin, setPin] = useState('');
   const [location, setLocation] = useState(null);
-  
   const [basicData, setBasicData] = useState(null);
-  const [fullHistory, setFullHistory] = useState(null);
 
-  const fetchBasicData = async (id) => {
+  const fetchFullData = async (id) => {
     return new Promise(r => setTimeout(() => r({
       name: "JUAN PÉREZ",
       bloodType: "O+",
@@ -21,18 +19,12 @@ const EmergencyAction = () => {
       chronicDisease: "Diabetes Tipo 2",
       baseMedication: "Metformina / Insulina",
       isDonor: "SÍ, DONADOR",
+      history: "Cirugía de Apéndice (2024), Tratamiento Hipertensión desde 2023.",
       contacts: [
         { name: "María (Esposa)", phone: "+52 33 1234 5678" },
         { name: "Carlos (Hijo)", phone: "+52 33 8765 4321" }
       ]
     }), 1500));
-  };
-
-  const fetchFullHistory = async (id, pinCode) => {
-    return new Promise(r => setTimeout(() => r([
-      { date: "2024-10-12", event: "Cirugía de Apéndice", hospital: "Hospital Civil" },
-      { date: "2023-05-20", event: "Diagnóstico: Hipertensión", doctor: "Dr. Arreola" }
-    ]), 1000));
   };
 
   const handleStartScan = () => {
@@ -42,21 +34,19 @@ const EmergencyAction = () => {
         setLocation({ lat: pos.coords.latitude, lng: pos.coords.longitude });
         setTimeout(async () => {
           setStep('loading');
-          const data = await fetchBasicData("nfc_001");
+          const data = await fetchFullData("nfc_001");
           setBasicData(data);
           setStep('success');
         }, 1000);
       }, (err) => {
-        alert("GPS Requerido");
+        alert("GPS Requerido para protocolizar el rescate");
         setStep('idle');
       });
     }
   };
 
-  const handleAuthorize = async () => {
-    if (pin === '1234') {
-      const history = await fetchFullHistory("nfc_001", pin);
-      setFullHistory(history);
+  const handleAuthorize = () => {
+    if (pin === '1234') { // PIN de prueba
       setIsAuthorized(true);
     } else {
       alert("PIN Incorrecto");
@@ -85,7 +75,7 @@ const EmergencyAction = () => {
 
   return (
     <div className="w-full space-y-6 animate-in slide-in-from-bottom-8 duration-500 pb-10">
-      {/* FICHA VITAL HOMOGÉNEA */}
+      {/* FICHA VITAL PÚBLICA */}
       <div className="bg-white rounded-[40px] shadow-2xl overflow-hidden border border-slate-100">
         <div className="bg-myhealth-red p-4 text-white flex justify-between items-center">
           <div className="flex items-center gap-2">
@@ -96,7 +86,6 @@ const EmergencyAction = () => {
         </div>
         
         <div className="p-6 space-y-6">
-          {/* Identificación con Foto */}
           <div className="flex flex-col items-center text-center space-y-4">
             <div className="relative">
               <div className="w-28 h-28 rounded-full overflow-hidden border-4 border-slate-50 shadow-xl bg-slate-200">
@@ -118,7 +107,6 @@ const EmergencyAction = () => {
             </div>
           </div>
           
-          {/* Datos Críticos en Grid Homogéneo */}
           <div className="grid grid-cols-2 gap-3">
             <div className="bg-slate-50 p-4 rounded-3xl border border-slate-100">
               <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1 flex items-center gap-1">
@@ -132,32 +120,6 @@ const EmergencyAction = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div className="bg-slate-50 p-4 rounded-3xl border border-slate-100">
-              <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Religión</p>
-              <p className="text-xs font-bold text-slate-700">{basicData?.religion}</p>
-            </div>
-            <div className="bg-slate-50 p-4 rounded-3xl border border-slate-100">
-              <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Donador</p>
-              <p className="text-xs font-bold text-slate-700">{basicData?.isDonor}</p>
-            </div>
-          </div>
-
-          <div className="bg-slate-50 p-5 rounded-[32px] border border-slate-100">
-            <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2 text-center">Información Crítica</p>
-            <div className="space-y-3">
-              <div className="flex justify-between items-center border-b border-slate-200 pb-2">
-                <span className="text-[10px] font-bold text-slate-500 uppercase">Enfermedad:</span>
-                <span className="text-xs font-black text-slate-800 uppercase italic">{basicData?.chronicDisease}</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-[10px] font-bold text-slate-500 uppercase">Medicación:</span>
-                <span className="text-xs font-black text-myhealth-blue text-right leading-tight max-w-[150px]">{basicData?.baseMedication}</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Contactos de Emergencia (Doble Contacto) */}
           <div className="space-y-3">
             <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest text-center">Contactos de Auxilio</p>
             {basicData?.contacts.map((contact, i) => (
@@ -180,40 +142,60 @@ const EmergencyAction = () => {
         </div>
       </div>
 
-      {/* HISTORIAL PROTEGIDO (Nivel 2) */}
-      <div className="bg-slate-50 rounded-[40px] p-8 border-2 border-dashed border-slate-200">
+      {/* BÓVEDA PROTEGIDA (HISTORIAL PRIVADO) */}
+      <div className="bg-slate-900 rounded-[40px] p-8 border-2 border-slate-800 shadow-xl overflow-hidden relative">
         {!isAuthorized ? (
-          <div className="space-y-6 text-center">
-            <div className="flex flex-col items-center gap-3 opacity-60">
-              <Lock size={32} className="text-slate-400" />
-              <h4 className="font-black text-slate-400 uppercase italic tracking-tighter text-lg leading-none">Historial Privado</h4>
+          <div className="space-y-6 text-center animate-in fade-in duration-500">
+            <div className="flex flex-col items-center gap-3">
+              <div className="w-16 h-16 bg-white/5 rounded-2xl flex items-center justify-center text-myhealth-blue border border-white/10">
+                <Lock size={32} />
+              </div>
+              <h4 className="font-black text-white uppercase italic tracking-tighter text-xl leading-none">Bóveda Médica</h4>
+              <p className="text-slate-400 text-[10px] font-bold uppercase tracking-widest">Historial Privado Cifrado</p>
             </div>
             <div className="space-y-3">
               <input 
                 type="password" 
-                placeholder="Introducir PIN" 
-                className="w-full p-5 rounded-[24px] border-2 border-slate-100 outline-none font-bold text-center text-lg bg-white shadow-sm focus:border-myhealth-blue transition-all"
+                maxLength="4"
+                placeholder="PIN PIN PIN PIN" 
+                className="w-full p-5 rounded-[24px] border-2 border-white/10 outline-none font-black text-center text-2xl bg-white/5 text-white focus:border-myhealth-blue transition-all"
                 value={pin}
-                onChange={(e) => setPin(e.target.value)}
+                onChange={(e) => setPin(e.target.value.replace(/\D/g, ''))}
               />
-              <button onClick={handleAuthorize} className="w-full bg-slate-900 text-white py-5 rounded-[24px] font-black uppercase tracking-widest text-xs shadow-xl active:scale-95 transition-all">
-                Acceder a la Bóveda
+              <button onClick={handleAuthorize} className="w-full bg-myhealth-blue text-white py-5 rounded-[24px] font-black uppercase tracking-widest text-xs shadow-xl active:scale-95 transition-all">
+                Desbloquear Historial
               </button>
             </div>
           </div>
         ) : (
-          <div className="animate-in fade-in duration-500 space-y-4">
-            <div className="flex items-center gap-2 text-green-600 font-black text-[10px] uppercase tracking-widest mb-4">
-              <Unlock size={14} /> Historial Sincronizado
+          <div className="animate-in fade-in slide-in-from-top-4 duration-500 space-y-6">
+            <div className="flex items-center justify-between border-b border-white/10 pb-4">
+              <div className="flex items-center gap-2 text-green-400 font-black text-[10px] uppercase tracking-widest">
+                <Unlock size={14} /> Acceso Autorizado
+              </div>
+              <div className="bg-green-400/10 text-green-400 text-[8px] font-black px-2 py-1 rounded-full border border-green-400/20">BLOQUEO AUTOMÁTICO EN 2M</div>
             </div>
-            <div className="space-y-2">
-              {fullHistory?.map((item, index) => (
-                <div key={index} className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
-                  <p className="text-[9px] font-bold text-slate-400 uppercase">{item.date}</p>
-                  <p className="font-bold text-slate-800 text-sm leading-tight">{item.event}</p>
-                  <p className="text-[10px] text-slate-500 italic mt-1">{item.hospital || item.doctor}</p>
+            
+            <div className="space-y-4">
+              <div>
+                <p className="text-[9px] font-black text-slate-500 uppercase flex items-center gap-1 tracking-widest mb-2">
+                  <FileText size={10} /> Historial Clínico
+                </p>
+                <div className="bg-white/5 p-4 rounded-2xl text-slate-200 text-xs font-semibold border border-white/5 leading-relaxed">
+                  {basicData?.history}
                 </div>
-              ))}
+              </div>
+              
+              <div className="grid grid-cols-2 gap-3">
+                <div className="bg-white/5 p-4 rounded-2xl border border-white/5">
+                  <p className="text-[9px] font-black text-slate-500 uppercase mb-1 tracking-widest">Enfermedad</p>
+                  <p className="text-white text-xs font-black uppercase italic">{basicData?.chronicDisease}</p>
+                </div>
+                <div className="bg-white/5 p-4 rounded-2xl border border-white/5">
+                  <p className="text-[9px] font-black text-slate-500 uppercase mb-1 tracking-widest">Medicación</p>
+                  <p className="text-white text-[10px] font-bold leading-tight">{basicData?.baseMedication}</p>
+                </div>
+              </div>
             </div>
           </div>
         )}
